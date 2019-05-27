@@ -83,35 +83,6 @@ func HTTPViaProxy(method, url, data, proxy string, headers *http.Header, cookie 
 	}
 
 	return client.Do(req)
-
-	// resp, err := client.Do(req)
-	// if err != nil {
-	// 	log.Println("发送HTTP请求错误: %s", err)
-	// 	// return 400, "", err
-	// }
-	// return *resp, nil
-	// defer resp.Body.Close()
-
-	// // 处理gzip
-	// var reader io.ReadCloser
-	// switch resp.Header.Get("Content-Encoding") {
-	// case "gzip":
-	// 	reader, err = gzip.NewReader(resp.Body)
-	// 	defer reader.Close()
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	// default:
-	// 	reader = resp.Body
-	// }
-
-	// respTxt, err := ioutil.ReadAll(reader)
-	// if err != nil {
-	// 	log.Println("读取HTTP响应错误: %s", err)
-	// 	return resp.StatusCode, "", err
-	// }
-
-	// return resp.StatusCode, string(respTxt), err
 }
 
 /*HTTPRawViaProxy 用于发送原始报文
