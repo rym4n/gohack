@@ -97715,6 +97715,7 @@ var ChinaIP = map[string][]string{
 	},
 }
 
+// CityCode 为城市编码和城市映射表
 var CityCode = map[string]string{
 	"110000": "北京市",
 	"110100": "北京市市辖区",

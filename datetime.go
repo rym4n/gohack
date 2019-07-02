@@ -8,8 +8,10 @@ import (
 	"time"
 )
 
+// Loc 表示上海时区
 var Loc *time.Location
 
+// DefaultFmt 时间格式化的标准格式
 const DefaultFmt = "2006-01-02 15:04:05"
 
 func init() {
@@ -17,13 +19,13 @@ func init() {
 }
 
 /**
- * Date 格式化字符串
+ * format 格式化字符串
  * timestamp 时间戳
  * 例1：Y-m-d 返回2017-08-24
  * 例2：y年m月d日 返回 17年08月24日
  * 例3：H:i:s 返回 17:04:57
  */
-func Date(date string, timestamps ...int64) string {
+func Date(format string, timestamps ...int64) string {
 	var timestamp int64
 	if len(timestamps) > 0 {
 		timestamp = timestamps[0]
@@ -33,33 +35,31 @@ func Date(date string, timestamps ...int64) string {
 
 	//创建一个多对替换的规则
 	replaceRule := strings.NewReplacer("Y", "2006", "y", "06", "m", "01", "d", "02", "H", "15", "i", "04", "s", "05")
-	date = replaceRule.Replace(date)
+	date := replaceRule.Replace(format)
 
 	_timeModel := time.Unix(timestamp, 0).In(Loc)
 
 	return _timeModel.Format(date)
 }
 
-/**
- * 获取当前系统时间戳
- */
+// Time 获取当前系统时间戳
 func Time() int64 {
 	return Now().Unix()
 }
 
-// 返回当前时间
+// Now 返回上海时区的时间
 func Now() time.Time {
 	return time.Now().In(Loc)
 }
 
-// 返回当天0点时间对象
+// Today 返回当天0点时间对象
 func Today() time.Time {
 	n := Now()
 	return time.Date(n.Year(), n.Month(), n.Day(), 0, 0, 0, 0, Loc)
 }
 
-// 当前月开始
-func BeginningOfMonth() time.Time {
+// BeginOfMonth 当前月开始
+func BeginOfMonth() time.Time {
 	y, m, _ := Now().Date()
 	return time.Date(y, m, 1, 0, 0, 0, 0, Loc)
 }
@@ -72,7 +72,7 @@ func BeginningOfMonth() time.Time {
  * 例2：newtimes,_ := getTime("+12hours")
  * 例3：newtimes,_ := getTime("+1years")
  */
-func Strtotime(str string) int64 {
+func Str2Time(str string) int64 {
 	str = strings.ToLower(str)
 
 	arrTmpMap := make(map[string]int64)
@@ -129,17 +129,6 @@ func Strtotime(str string) int64 {
 	return 0
 }
 
-func getFormatInt(str string, key string) (int64, error) {
-	strNumber := strings.Trim(str, key)
-	strNumber = strings.TrimSpace(strNumber)
-	number, err := strconv.ParseInt(strNumber, 10, 0)
-	if err != nil {
-		return 0, errors.New("字符类型错误")
-	} else {
-		return number, nil
-	}
-}
-
 //FormatTime convert time to a beauty format
 func FormatTime(t time.Duration) string {
 	var tmp float64
@@ -164,10 +153,10 @@ func DiffDayNum(startDay string, endDay string) (dayNum int) {
 	}
 
 	daySecond := 86400
-	standTime := Strtotime("1970-01-01")
+	standTime := Str2Time("1970-01-01")
 
-	startTime := Strtotime(startDay)
-	endTime := Strtotime(endDay)
+	startTime := Str2Time(startDay)
+	endTime := Str2Time(endDay)
 
 	dayNumStart := float64(startTime-standTime) / float64(daySecond)
 	dayNumNow := float64(endTime-standTime) / float64(daySecond)
@@ -178,11 +167,22 @@ func DiffDayNum(startDay string, endDay string) (dayNum int) {
 
 }
 
-// ConvertToTs 将时间格式字符串转换为时间戳
-func ConvertToTs(layout, timeString string) (int64, error) {
+// Datetime2Ts 将时间格式字符串转换为时间戳
+func Datetime2Ts(layout, timeString string) (int64, error) {
 	t, err := time.Parse(layout, timeString)
 	if err != nil {
 		return 0, err
 	}
 	return t.Unix(), nil
+}
+
+func getFormatInt(str string, key string) (int64, error) {
+	strNumber := strings.Trim(str, key)
+	strNumber = strings.TrimSpace(strNumber)
+	number, err := strconv.ParseInt(strNumber, 10, 0)
+	if err != nil {
+		return 0, errors.New("字符类型错误")
+	} else {
+		return number, nil
+	}
 }

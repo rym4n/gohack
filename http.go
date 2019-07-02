@@ -43,7 +43,7 @@ func QueryStringToMap(query string) (ret map[string]string, err error) {
 }
 
 // HTTPViaProxy 通过proxy发包，支持socks、http、https等类型的proxy
-func HTTPViaProxy(method, url, data, proxy string, headers *http.Header, cookie *http.Cookie) (*http.Response, error) {
+func HTTPViaProxy(method, url, data, proxy string, timeout int, headers *http.Header, cookie *http.Cookie) (*http.Response, error) {
 	if proxy == "" {
 		proxy = "direct://0.0.0.0:0000"
 	}
@@ -58,7 +58,7 @@ func HTTPViaProxy(method, url, data, proxy string, headers *http.Header, cookie 
 
 	client := &http.Client{
 		Transport: httpTransport,
-		Timeout:   10 * time.Second,
+		Timeout:   time.Duration(timeout) * time.Second,
 	}
 
 	var req *http.Request
@@ -88,13 +88,13 @@ func HTTPViaProxy(method, url, data, proxy string, headers *http.Header, cookie 
 /*HTTPRawViaProxy 用于发送原始报文
 @raw  : burp 之类抓到的原始报文
 */
-func HTTPRawViaProxy(protocol, host, port, raw, proxy string) (*http.Response, error) {
+func HTTPRawViaProxy(protocol, host, port, raw, proxy string, timeout int) (*http.Response, error) {
 	sep := "\n"
 	if strings.Contains(raw, "\r\n") {
 		sep = "\r\n"
 	}
 	rawHTTP := strings.Split(raw, sep+sep)
-	headers := strings.Split(rawHTTP[0], sep)
+	headers := strings.Split(strings.TrimSpace(rawHTTP[0]), sep)
 	data := ""
 	if len(rawHTTP) > 1 {
 		data = strings.Join(rawHTTP[1:], sep+sep)
@@ -120,7 +120,7 @@ func HTTPRawViaProxy(protocol, host, port, raw, proxy string) (*http.Response, e
 		reqHeader.Add(h[0], h[1])
 	}
 
-	return HTTPViaProxy(firstHead[0], url, data, proxy, &reqHeader, nil)
+	return HTTPViaProxy(firstHead[0], url, data, proxy, timeout, &reqHeader, nil)
 }
 
 // GetResponseText 从响应结构体中获取文本字符串，包括自动处理gzip
