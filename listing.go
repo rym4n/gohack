@@ -1,17 +1,21 @@
 package gohack
 
+// Replacer 接口
 type Replacer interface {
 	Len() int
 	Replace([]int) Replacer
 	ToString() string
 }
 
+// IntReplacer 适用元素为int类型
 type IntReplacer []int
 
+// Len 计算元素数量
 func (ir IntReplacer) Len() int {
 	return len(ir)
 }
 
+// Replace
 func (ir IntReplacer) Replace(indices []int) Replacer {
 	result := make(IntReplacer, len(indices), len(indices))
 	for i, idx := range indices {
@@ -20,6 +24,7 @@ func (ir IntReplacer) Replace(indices []int) Replacer {
 	return result
 }
 
+// ToString 输出字符串
 func (ir IntReplacer) ToString() string {
 	result := ""
 	for _, v := range ir {
@@ -93,7 +98,7 @@ func (fr Float64Replacer) ToString() string {
 	return result
 }
 
-//Permutation generator
+// Permutation generator
 func Permutations(list Replacer, selectNum int, repeatable bool, buf int) (c chan Replacer) {
 	c = make(chan Replacer, buf)
 	go func() {
@@ -124,7 +129,7 @@ func pop(l []int, i int) (v int, sl []int) {
 	return
 }
 
-//Permtation generator for int slice
+// Permtation generator for int slice
 func permutations(list []int, selectNum, buf int) (c chan []int) {
 	c = make(chan []int, buf)
 	go func() {
@@ -155,7 +160,7 @@ func permutations(list []int, selectNum, buf int) (c chan []int) {
 	return
 }
 
-//Repeated permtation generator for int slice
+// Repeated permtation generator for int slice
 func repeatedPermutations(list []int, selectNum, buf int) (c chan []int) {
 	c = make(chan []int, buf)
 	go func() {
@@ -176,7 +181,7 @@ func repeatedPermutations(list []int, selectNum, buf int) (c chan []int) {
 	return
 }
 
-//Combination generator
+// Combination 组合数生成器
 func Combinations(list Replacer, selectNum int, repeatable bool, buf int) (c chan Replacer) {
 	c = make(chan Replacer, buf)
 	index := make([]int, list.Len(), list.Len())
@@ -201,7 +206,7 @@ func Combinations(list Replacer, selectNum int, repeatable bool, buf int) (c cha
 	return
 }
 
-//Combination generator for int slice
+// Combination generator for int slice
 func combinations(list []int, selectNum, buf int) (c chan []int) {
 	c = make(chan []int, buf)
 	go func() {
@@ -224,7 +229,7 @@ func combinations(list []int, selectNum, buf int) (c chan []int) {
 	return
 }
 
-//Repeated combination generator for int slice
+// Repeated combination generator for int slice
 func repeatedCombinations(list []int, selectNum, buf int) (c chan []int) {
 	c = make(chan []int, buf)
 	go func() {

@@ -22,7 +22,6 @@ func RandString(letters string, n int) string {
 		letters = "0123456789"
 	}
 	b := make([]byte, n)
-	// A rand.Int63() generates 63 random bits, enough for letterIdxMax letters!
 	for i, cache, remain := n-1, rand.Int63(), letterIdxMax; i >= 0; {
 		if remain == 0 {
 			cache, remain = rand.Int63(), letterIdxMax
@@ -37,7 +36,7 @@ func RandString(letters string, n int) string {
 	return string(b)
 }
 
-// 打乱 []int 的元素顺序
+// Shuffle 打乱 []int 的元素顺序
 func Shuffle(vals []int) *[]int {
 	r := rand.New(rand.NewSource(time.Now().Unix()))
 	ret := make([]int, len(vals))

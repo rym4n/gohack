@@ -8,23 +8,23 @@ import (
 	"time"
 )
 
-// Loc 表示上海时区
-var Loc *time.Location
+// defaultFmt 表示时间格式化的标准格式
+const defaultFmt = "2006-01-02 15:04:05"
 
-// DefaultFmt 时间格式化的标准格式
-const DefaultFmt = "2006-01-02 15:04:05"
+var loc *time.Location
 
 func init() {
-	Loc, _ = time.LoadLocation("Asia/Shanghai")
+	//loc 初始化为上海时区
+	loc, _ = time.LoadLocation("Asia/Shanghai")
 }
 
-/**
- * format 格式化字符串
- * timestamp 时间戳
- * 例1：Y-m-d 返回2017-08-24
- * 例2：y年m月d日 返回 17年08月24日
- * 例3：H:i:s 返回 17:04:57
- */
+/*
+Date 格式化字符串
+@timestamp: 时间戳
+例1：Y-m-d 返回2017-08-24
+例2：y年m月d日 返回 17年08月24日
+例3：H:i:s 返回 17:04:57
+*/
 func Date(format string, timestamps ...int64) string {
 	var timestamp int64
 	if len(timestamps) > 0 {
@@ -37,7 +37,7 @@ func Date(format string, timestamps ...int64) string {
 	replaceRule := strings.NewReplacer("Y", "2006", "y", "06", "m", "01", "d", "02", "H", "15", "i", "04", "s", "05")
 	date := replaceRule.Replace(format)
 
-	_timeModel := time.Unix(timestamp, 0).In(Loc)
+	_timeModel := time.Unix(timestamp, 0).In(loc)
 
 	return _timeModel.Format(date)
 }
@@ -49,29 +49,27 @@ func Time() int64 {
 
 // Now 返回上海时区的时间
 func Now() time.Time {
-	return time.Now().In(Loc)
+	return time.Now().In(loc)
 }
 
 // Today 返回当天0点时间对象
 func Today() time.Time {
 	n := Now()
-	return time.Date(n.Year(), n.Month(), n.Day(), 0, 0, 0, 0, Loc)
+	return time.Date(n.Year(), n.Month(), n.Day(), 0, 0, 0, 0, loc)
 }
 
 // BeginOfMonth 当前月开始
 func BeginOfMonth() time.Time {
 	y, m, _ := Now().Date()
-	return time.Date(y, m, 1, 0, 0, 0, 0, Loc)
+	return time.Date(y, m, 1, 0, 0, 0, 0, loc)
 }
 
-/**
- * 通过字符串获取时间戳
- * return int64 时间戳
- * return err 错误信息
- * 用例：newtimes,_ := getTime("-1days")
- * 例2：newtimes,_ := getTime("+12hours")
- * 例3：newtimes,_ := getTime("+1years")
- */
+/*
+Str2Time 通过字符串获取时间戳
+例1：newtimes,_ := Str2Time("-1days")
+例2：newtimes,_ := Str2Time("+12hours")
+例3：newtimes,_ := Str2Time("+1years")
+*/
 func Str2Time(str string) int64 {
 	str = strings.ToLower(str)
 
@@ -81,7 +79,7 @@ func Str2Time(str string) int64 {
 	arrTmpMap["hours"] = 3600
 	arrTmpMap["days"] = 86400
 
-	_timeNow := time.Now().In(Loc)
+	_timeNow := time.Now().In(loc)
 
 	//解析*seconds,*minutes,*hours,*days
 	for key := range arrTmpMap {
@@ -104,7 +102,7 @@ func Str2Time(str string) int64 {
 		return _timeNow.Unix()
 	}
 
-	//解析*years
+	// 解析*years
 	if strings.HasSuffix(str, "years") {
 		numberYears, err := getFormatInt(str, "years")
 		if err != nil {
@@ -114,22 +112,22 @@ func Str2Time(str string) int64 {
 		return _timeNow.Unix()
 	}
 
-	//解析 xxxx-xx-xx和xxxx-xx-xx xx:xx:xx格式的字符串
+	// 解析 xxxx-xx-xx 和 xxxx-xx-xx xx:xx:xx 格式的字符串
 	strLen := len(str)
 	if strLen == 10 {
 		str = str + " 00:00:00"
 	}
 	strLen = len(str)
 	if strLen == 19 {
-		//不使用Parse解析是因为有8个小时的时差
-		//_timeModel,_ := time.Parse("2006-01-02 15:04:05",str);
-		_timeModel, _ := time.ParseInLocation("2006-01-02 15:04:05", str, Loc)
+		// 不使用Parse解析是因为有8个小时的时差
+		// _timeModel,_ := time.Parse("2006-01-02 15:04:05",str);
+		_timeModel, _ := time.ParseInLocation(defaultFmt, str, loc)
 		return _timeModel.Unix()
 	}
 	return 0
 }
 
-//FormatTime convert time to a beauty format
+// FormatTime 将普通时间类型转换为格式化的字符串
 func FormatTime(t time.Duration) string {
 	var tmp float64
 	timeList := [...]time.Duration{time.Hour, time.Minute, time.Second, time.Millisecond, time.Microsecond, time.Nanosecond}
@@ -146,7 +144,7 @@ func FormatTime(t time.Duration) string {
 	return ""
 }
 
-//DiffDayNum 计算两个日期之间差多少天
+// DiffDayNum 计算两个日期之间差多少天
 func DiffDayNum(startDay string, endDay string) (dayNum int) {
 	if startDay == "" || endDay == "" {
 		return
@@ -164,10 +162,13 @@ func DiffDayNum(startDay string, endDay string) (dayNum int) {
 	day := dayNumNow - dayNumStart
 	dayNum = int(day)
 	return dayNum
-
 }
 
-// Datetime2Ts 将时间格式字符串转换为时间戳
+/*
+Datetime2Ts 将时间格式字符串转换为时间戳
+@layout: 参考 "2006-01-02 15:04:05" 这个值做格式变换
+@timeString: 时间戳字符串
+*/
 func Datetime2Ts(layout, timeString string) (int64, error) {
 	t, err := time.Parse(layout, timeString)
 	if err != nil {
@@ -182,7 +183,6 @@ func getFormatInt(str string, key string) (int64, error) {
 	number, err := strconv.ParseInt(strNumber, 10, 0)
 	if err != nil {
 		return 0, errors.New("字符类型错误")
-	} else {
-		return number, nil
 	}
+	return number, nil
 }

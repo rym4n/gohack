@@ -14,7 +14,7 @@ import (
 	"github.com/gamexg/proxyclient"
 )
 
-//HTTPBuildQuery 将map转换为url查询参数形式
+// HTTPBuildQuery 将map转换为url查询参数形式
 func HTTPBuildQuery(queryArr map[string]string) string {
 	if queryArr == nil {
 		return ""
@@ -42,7 +42,16 @@ func QueryStringToMap(query string) (ret map[string]string, err error) {
 	return ret, nil
 }
 
-// HTTPViaProxy 通过proxy发包，支持socks、http、https等类型的proxy
+/*
+HTTPViaProxy 通过proxy发包，支持socks、http、https等类型的proxy
+@method: 值为 OPTIONS 或 GET 或 HEAD 或 POST 或 PUT 或 DELETE 或 TRACE 或 CONNECT
+@url: 请求URL
+@data: HTTP Body 中的数据
+@proxy: 指定代理，格式为 type://host:port, 例如: socks5://127.0.0.1:1080, 无代理则传入空字符串
+@timeout: 超时时间，请求并发量较大时，timeout最好大一点
+@headers: http.Header类型指针，表示请求头
+@cookie: http.Cookie类型指针，表示请求cookie
+*/
 func HTTPViaProxy(method, url, data, proxy string, timeout int, headers *http.Header, cookie *http.Cookie) (*http.Response, error) {
 	if proxy == "" {
 		proxy = "direct://0.0.0.0:0000"
@@ -63,11 +72,11 @@ func HTTPViaProxy(method, url, data, proxy string, timeout int, headers *http.He
 
 	var req *http.Request
 
-	switch method {
-	case "POST":
-		req, err = http.NewRequest("POST", url, strings.NewReader(data))
-	default:
-		req, err = http.NewRequest("GET", url, nil)
+	method = strings.ToUpper(method)
+	if data == "" {
+		req, err = http.NewRequest(method, url, nil)
+	} else {
+		req, err = http.NewRequest(method, url, strings.NewReader(data))
 	}
 
 	if err != nil {
@@ -85,8 +94,14 @@ func HTTPViaProxy(method, url, data, proxy string, timeout int, headers *http.He
 	return client.Do(req)
 }
 
-/*HTTPRawViaProxy 用于发送原始报文
-@raw  : burp 之类抓到的原始报文
+/*
+HTTPRawViaProxy 用于发送原始报文
+@protocol: http 或 https
+@host: 主机IP或域名
+@port: 端口
+@raw: burpsuite之类的工具抓到的原始报文
+@proxy: 指定代理，格式为 type://host:port, 例如: socks5://127.0.0.1:1080, 无代理则传入空字符串
+@timeout: 超时时间，请求并发量较大时，timeout最好大一点
 */
 func HTTPRawViaProxy(protocol, host, port, raw, proxy string, timeout int) (*http.Response, error) {
 	sep := "\n"
@@ -111,11 +126,10 @@ func HTTPRawViaProxy(protocol, host, port, raw, proxy string, timeout int) (*htt
 		path = strings.Split(path, u.Host)[1]
 	}
 
-	url := fmt.Sprintf("%s://%s:%s%s", protocol, host, port, path)
+	url := fmt.Sprintf("%s://%s:%s%s", strings.ToLower(protocol), host, port, path)
 
 	reqHeader := make(http.Header)
 	for _, v := range headers[1:] {
-		// headers := make(http.Header)
 		h := strings.Split(v, ":")
 		reqHeader.Add(h[0], h[1])
 	}
@@ -125,7 +139,7 @@ func HTTPRawViaProxy(protocol, host, port, raw, proxy string, timeout int) (*htt
 
 // GetResponseText 从响应结构体中获取文本字符串，包括自动处理gzip
 func GetResponseText(resp *http.Response) (string, error) {
-	// 处理gzip
+	//处理gzip
 	var (
 		body []byte
 		err  error

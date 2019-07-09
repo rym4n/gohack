@@ -9,7 +9,11 @@ import (
 	jsoniter "github.com/json-iterator/go"
 )
 
-//Round 保留小数点后几位
+/*
+Round 保留小数点后几位
+@num: 原始数字
+@precise: 在小数点后要保留的位数
+*/
 func Round(num float64, precise int) float64 {
 	preciseStr := fmt.Sprintf("%d", precise)
 	tpl := "%0." + preciseStr + "f"
@@ -20,7 +24,11 @@ func Round(num float64, precise int) float64 {
 	return ret
 }
 
-// InArray 判断某个值是否在数组中
+/*
+InArray 判断某个值是否在数组中
+@obj: 待查找的值
+@target: 目标数组
+*/
 func InArray(obj interface{}, target interface{}) bool {
 	targetValue := reflect.ValueOf(target)
 	switch reflect.TypeOf(target).Kind() {
@@ -39,7 +47,10 @@ func InArray(obj interface{}, target interface{}) bool {
 	return false
 }
 
-// StrVal 把其他类型转为string
+/*
+StrVal 把其他类型转为string
+@val: 需要转换的值
+*/
 func StrVal(val interface{}) string {
 	var strTmp string
 	valueType := reflect.TypeOf(val).Kind()
@@ -59,7 +70,10 @@ func StrVal(val interface{}) string {
 	return strTmp
 }
 
-// IntVal 把其他类型转为int
+/*
+IntVal 把其他类型转为int
+@val: 需要转换的值
+*/
 func IntVal(val interface{}) int {
 	var intTmp int
 	valueType := reflect.TypeOf(val).Kind()
@@ -101,7 +115,10 @@ func IntVal(val interface{}) int {
 	return intTmp
 }
 
-// SortToQS 根据字典序排列key-value并生成url查询参数字符串
+/*
+SortToQS 根据字典序排列key-value并生成url查询参数字符串
+@data: key-value 的字典
+*/
 func SortToQS(data map[string]string) string {
 	var (
 		str  string
@@ -122,12 +139,19 @@ func SortToQS(data map[string]string) string {
 	return str
 }
 
-// StrLen 计算字符串长度
+/*
+StrLen 计算字符串长度
+@str: 指定字符串
+*/
 func StrLen(str string) int {
 	return len([]rune(str))
 }
 
-// ConvertToStruct 通过json序列化反序列化的方式转换不同结构体
+/*
+ConvertToStruct 通过json序列化反序列化的方式转换不同结构体
+@in: 待转换的结构体
+@out: 转换后的结构体
+*/
 func ConvertToStruct(in, out interface{}) (err error) {
 	retByte, err := jsoniter.Marshal(in)
 	if err != nil {
