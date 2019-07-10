@@ -37,12 +37,13 @@ func RandString(letters string, n int) string {
 }
 
 // Shuffle 打乱 []int 的元素顺序
-func Shuffle(vals []int) *[]int {
+func Shuffle(vals []int) (randList *[]int) {
 	r := rand.New(rand.NewSource(time.Now().Unix()))
 	ret := make([]int, len(vals))
 	perm := r.Perm(len(vals))
 	for i, randIndex := range perm {
 		ret[i] = vals[randIndex]
 	}
-	return &ret
+	randList = &ret
+	return randList
 }

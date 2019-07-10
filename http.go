@@ -15,7 +15,7 @@ import (
 )
 
 // HTTPBuildQuery 将map转换为url查询参数形式
-func HTTPBuildQuery(queryArr map[string]string) string {
+func HTTPBuildQuery(queryArr map[string]string) (queryString string) {
 	if queryArr == nil {
 		return ""
 	}
@@ -23,7 +23,8 @@ func HTTPBuildQuery(queryArr map[string]string) string {
 	for k, v := range queryArr {
 		q.Add(k, v)
 	}
-	return q.Encode()
+	queryString = q.Encode()
+	return
 }
 
 // QueryStringToMap 将url查询参数转换为map
@@ -52,22 +53,22 @@ HTTPViaProxy 通过proxy发包，支持socks、http、https等类型的proxy
 @headers: http.Header类型指针，表示请求头
 @cookie: http.Cookie类型指针，表示请求cookie
 */
-func HTTPViaProxy(method, url, data, proxy string, timeout int, headers *http.Header, cookie *http.Cookie) (*http.Response, error) {
-	if proxy == "" {
-		proxy = "direct://0.0.0.0:0000"
-	}
-	dialer, err := proxyclient.NewProxyClient(proxy)
-	if err != nil {
-		log.Panicf("proxy 出错了: %s", err)
-	}
+func HTTPViaProxy(method, url, data, proxy string, timeout int, headers *http.Header, cookie *http.Cookie) (response *http.Response, err error) {
 	httpTransport := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		Dial:            dialer.Dial,
+	}
+
+	if proxy != "" {
+		dialer, err := proxyclient.NewProxyClient(proxy)
+		if err != nil {
+			log.Panicf("proxy 出错了: %s", err)
+		}
+		httpTransport.Dial = dialer.Dial
 	}
 
 	client := &http.Client{
-		Transport: httpTransport,
 		Timeout:   time.Duration(timeout) * time.Second,
+		Transport: httpTransport,
 	}
 
 	var req *http.Request
@@ -91,7 +92,8 @@ func HTTPViaProxy(method, url, data, proxy string, timeout int, headers *http.He
 		req.AddCookie(cookie)
 	}
 
-	return client.Do(req)
+	response, err = client.Do(req)
+	return
 }
 
 /*
@@ -103,7 +105,7 @@ HTTPRawViaProxy 用于发送原始报文
 @proxy: 指定代理，格式为 type://host:port, 例如: socks5://127.0.0.1:1080, 无代理则传入空字符串
 @timeout: 超时时间，请求并发量较大时，timeout最好大一点
 */
-func HTTPRawViaProxy(protocol, host, port, raw, proxy string, timeout int) (*http.Response, error) {
+func HTTPRawViaProxy(protocol, host, port, raw, proxy string, timeout int) (response *http.Response, err error) {
 	sep := "\n"
 	if strings.Contains(raw, "\r\n") {
 		sep = "\r\n"
@@ -134,7 +136,8 @@ func HTTPRawViaProxy(protocol, host, port, raw, proxy string, timeout int) (*htt
 		reqHeader.Add(h[0], h[1])
 	}
 
-	return HTTPViaProxy(firstHead[0], url, data, proxy, timeout, &reqHeader, nil)
+	response, err = HTTPViaProxy(firstHead[0], url, data, proxy, timeout, &reqHeader, nil)
+	return
 }
 
 // GetResponseText 从响应结构体中获取文本字符串，包括自动处理gzip

@@ -98,9 +98,15 @@ func (fr Float64Replacer) ToString() string {
 	return result
 }
 
-// Permutation generator
-func Permutations(list Replacer, selectNum int, repeatable bool, buf int) (c chan Replacer) {
-	c = make(chan Replacer, buf)
+/*
+Permutations 生成排列数
+@Replacer: 元素列表
+@selectNum: 排列长度
+@repeatable: 是否允许元素重复
+@bufSize: 消息通道缓存大小
+*/
+func Permutations(list Replacer, selectNum int, repeatable bool, bufSize int) (c chan Replacer) {
+	c = make(chan Replacer, bufSize)
 	go func() {
 		defer close(c)
 		var permGenerator func([]int, int, int) chan []int
@@ -113,7 +119,7 @@ func Permutations(list Replacer, selectNum int, repeatable bool, buf int) (c cha
 		for i := 0; i < list.Len(); i++ {
 			indices[i] = i
 		}
-		for perm := range permGenerator(indices, selectNum, buf) {
+		for perm := range permGenerator(indices, selectNum, bufSize) {
 			c <- list.Replace(perm)
 		}
 	}()
@@ -129,9 +135,8 @@ func pop(l []int, i int) (v int, sl []int) {
 	return
 }
 
-// Permtation generator for int slice
-func permutations(list []int, selectNum, buf int) (c chan []int) {
-	c = make(chan []int, buf)
+func permutations(list []int, selectNum, bufSize int) (c chan []int) {
+	c = make(chan []int, bufSize)
 	go func() {
 		defer close(c)
 		switch selectNum {
@@ -145,13 +150,13 @@ func permutations(list []int, selectNum, buf int) (c chan []int) {
 		case len(list):
 			for i := 0; i < len(list); i++ {
 				top, subList := pop(list, i)
-				for perm := range permutations(subList, selectNum-1, buf) {
+				for perm := range permutations(subList, selectNum-1, bufSize) {
 					c <- append([]int{top}, perm...)
 				}
 			}
 		default:
-			for comb := range combinations(list, selectNum, buf) {
-				for perm := range permutations(comb, selectNum, buf) {
+			for comb := range combinations(list, selectNum, bufSize) {
+				for perm := range permutations(comb, selectNum, bufSize) {
 					c <- perm
 				}
 			}
@@ -160,9 +165,8 @@ func permutations(list []int, selectNum, buf int) (c chan []int) {
 	return
 }
 
-// Repeated permtation generator for int slice
-func repeatedPermutations(list []int, selectNum, buf int) (c chan []int) {
-	c = make(chan []int, buf)
+func repeatedPermutations(list []int, selectNum, bufSize int) (c chan []int) {
+	c = make(chan []int, bufSize)
 	go func() {
 		defer close(c)
 		switch selectNum {
@@ -172,7 +176,7 @@ func repeatedPermutations(list []int, selectNum, buf int) (c chan []int) {
 			}
 		default:
 			for i := 0; i < len(list); i++ {
-				for perm := range repeatedPermutations(list, selectNum-1, buf) {
+				for perm := range repeatedPermutations(list, selectNum-1, bufSize) {
 					c <- append([]int{list[i]}, perm...)
 				}
 			}
@@ -181,9 +185,15 @@ func repeatedPermutations(list []int, selectNum, buf int) (c chan []int) {
 	return
 }
 
-// Combination 组合数生成器
-func Combinations(list Replacer, selectNum int, repeatable bool, buf int) (c chan Replacer) {
-	c = make(chan Replacer, buf)
+/*
+Combinations 组合数生成器
+@list: 元素列表
+@selectNum: 生成的组合数长度
+@repeatable: 是否允许重复元素
+@bufSize: 消息通道缓存大小
+*/
+func Combinations(list Replacer, selectNum int, repeatable bool, bufSize int) (c chan Replacer) {
+	c = make(chan Replacer, bufSize)
 	index := make([]int, list.Len(), list.Len())
 	for i := 0; i < list.Len(); i++ {
 		index[i] = i
@@ -198,7 +208,7 @@ func Combinations(list Replacer, selectNum int, repeatable bool, buf int) (c cha
 
 	go func() {
 		defer close(c)
-		for comb := range combGenerator(index, selectNum, buf) {
+		for comb := range combGenerator(index, selectNum, bufSize) {
 			c <- list.Replace(comb)
 		}
 	}()
@@ -206,9 +216,8 @@ func Combinations(list Replacer, selectNum int, repeatable bool, buf int) (c cha
 	return
 }
 
-// Combination generator for int slice
-func combinations(list []int, selectNum, buf int) (c chan []int) {
-	c = make(chan []int, buf)
+func combinations(list []int, selectNum, bufSize int) (c chan []int) {
+	c = make(chan []int, bufSize)
 	go func() {
 		defer close(c)
 		switch {
@@ -220,7 +229,7 @@ func combinations(list []int, selectNum, buf int) (c chan []int) {
 			return
 		default:
 			for i := 0; i < len(list); i++ {
-				for subComb := range combinations(list[i+1:], selectNum-1, buf) {
+				for subComb := range combinations(list[i+1:], selectNum-1, bufSize) {
 					c <- append([]int{list[i]}, subComb...)
 				}
 			}
@@ -229,9 +238,8 @@ func combinations(list []int, selectNum, buf int) (c chan []int) {
 	return
 }
 
-// Repeated combination generator for int slice
-func repeatedCombinations(list []int, selectNum, buf int) (c chan []int) {
-	c = make(chan []int, buf)
+func repeatedCombinations(list []int, selectNum, bufSize int) (c chan []int) {
+	c = make(chan []int, bufSize)
 	go func() {
 		defer close(c)
 		if selectNum == 1 {
@@ -241,7 +249,7 @@ func repeatedCombinations(list []int, selectNum, buf int) (c chan []int) {
 			return
 		}
 		for i := 0; i < len(list); i++ {
-			for subComb := range repeatedCombinations(list[i:], selectNum-1, buf) {
+			for subComb := range repeatedCombinations(list[i:], selectNum-1, bufSize) {
 				c <- append([]int{list[i]}, subComb...)
 			}
 		}

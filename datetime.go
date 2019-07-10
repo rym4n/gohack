@@ -25,7 +25,7 @@ Date 格式化字符串
 例2：y年m月d日 返回 17年08月24日
 例3：H:i:s 返回 17:04:57
 */
-func Date(format string, timestamps ...int64) string {
+func Date(format string, timestamps ...int64) (formatDate string) {
 	var timestamp int64
 	if len(timestamps) > 0 {
 		timestamp = timestamps[0]
@@ -37,9 +37,8 @@ func Date(format string, timestamps ...int64) string {
 	replaceRule := strings.NewReplacer("Y", "2006", "y", "06", "m", "01", "d", "02", "H", "15", "i", "04", "s", "05")
 	date := replaceRule.Replace(format)
 
-	_timeModel := time.Unix(timestamp, 0).In(loc)
-
-	return _timeModel.Format(date)
+	formatDate = time.Unix(timestamp, 0).In(loc).Format(date)
+	return
 }
 
 // Time 获取当前系统时间戳
@@ -53,15 +52,17 @@ func Now() time.Time {
 }
 
 // Today 返回当天0点时间对象
-func Today() time.Time {
+func Today() (zeroOclock time.Time) {
 	n := Now()
-	return time.Date(n.Year(), n.Month(), n.Day(), 0, 0, 0, 0, loc)
+	zeroOclock = time.Date(n.Year(), n.Month(), n.Day(), 0, 0, 0, 0, loc)
+	return
 }
 
 // BeginOfMonth 当前月开始
-func BeginOfMonth() time.Time {
+func BeginOfMonth() (firstDayOfMonth time.Time) {
 	y, m, _ := Now().Date()
-	return time.Date(y, m, 1, 0, 0, 0, 0, loc)
+	firstDayOfMonth = time.Date(y, m, 1, 0, 0, 0, 0, loc)
+	return
 }
 
 /*
@@ -128,20 +129,20 @@ func Str2Time(str string) int64 {
 }
 
 // FormatTime 将普通时间类型转换为格式化的字符串
-func FormatTime(t time.Duration) string {
+func FormatTime(t time.Duration) (formatTime string) {
 	var tmp float64
 	timeList := [...]time.Duration{time.Hour, time.Minute, time.Second, time.Millisecond, time.Microsecond, time.Nanosecond}
 	strList := [...]string{"h", "m", "s", "ms", "us", "ns"}
 
 	for k, v := range timeList {
-
 		if t >= v {
 			tmp = float64(t) / float64(v)
-			return fmt.Sprintf("%.2f%s", tmp, strList[k])
+			formatTime = fmt.Sprintf("%.2f%s", tmp, strList[k])
+			return
 		}
 	}
 
-	return ""
+	return
 }
 
 // DiffDayNum 计算两个日期之间差多少天
@@ -159,9 +160,8 @@ func DiffDayNum(startDay string, endDay string) (dayNum int) {
 	dayNumStart := float64(startTime-standTime) / float64(daySecond)
 	dayNumNow := float64(endTime-standTime) / float64(daySecond)
 
-	day := dayNumNow - dayNumStart
-	dayNum = int(day)
-	return dayNum
+	dayNum = int(dayNumNow - dayNumStart)
+	return
 }
 
 /*
@@ -169,20 +169,20 @@ Datetime2Ts 将时间格式字符串转换为时间戳
 @layout: 参考 "2006-01-02 15:04:05" 这个值做格式变换
 @timeString: 时间戳字符串
 */
-func Datetime2Ts(layout, timeString string) (int64, error) {
+func Datetime2Ts(layout, timeString string) (timestamp int64, err error) {
 	t, err := time.Parse(layout, timeString)
-	if err != nil {
-		return 0, err
+	if err == nil {
+		timestamp = t.Unix()
 	}
-	return t.Unix(), nil
+	return
 }
 
-func getFormatInt(str string, key string) (int64, error) {
+func getFormatInt(str string, key string) (number int64, err error) {
 	strNumber := strings.Trim(str, key)
 	strNumber = strings.TrimSpace(strNumber)
-	number, err := strconv.ParseInt(strNumber, 10, 0)
+	number, err = strconv.ParseInt(strNumber, 10, 0)
 	if err != nil {
-		return 0, errors.New("字符类型错误")
+		err = errors.New("字符类型错误")
 	}
-	return number, nil
+	return
 }

@@ -10,14 +10,16 @@ import (
 )
 
 // Crc32 计算字符串的crc值
-func Crc32(in string) string {
-	return fmt.Sprintf("%d", crc32.ChecksumIEEE([]byte(in)))
+func Crc32(str string) (hexValue string) {
+	hexValue = fmt.Sprintf("%x", crc32.ChecksumIEEE([]byte(str)))
+	return hexValue
 }
 
 // Md5 计算字符串的MD5值
-func Md5(str string) string {
+func Md5(str string) (hexValue string) {
 	strByte := []byte(str)
-	return fmt.Sprintf("%x", md5.Sum(strByte))
+	hexValue = fmt.Sprintf("%x", md5.Sum(strByte))
+	return hexValue
 }
 
 /*
@@ -25,15 +27,14 @@ HmacSha1 计算字符串的HmacSha1值
 @key: 计算hmac的key
 @str: 原始字符串
 */
-func HmacSha1(key, str string) []byte {
+func HmacSha1(key, str string) (hexValue string) {
 	mac := hmac.New(sha1.New, []byte(key))
-	mac.Write([]byte(str))
-	return mac.Sum(nil)
+	hexValue = fmt.Sprintf("%x", mac.Sum([]byte(str)))
+	return hexValue
 }
 
 // Sha256 计算字符串的sha256哈希值
-func Sha256(str string) string {
-	hash := sha256.New()
-	hash.Write([]byte(str))
-	return fmt.Sprintf("%x", hash.Sum(nil))
+func Sha256(str string) (hexValue string) {
+	hexValue = fmt.Sprintf("%x", sha256.New().Sum([]byte(str)))
+	return hexValue
 }
